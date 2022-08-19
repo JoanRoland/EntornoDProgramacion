@@ -1,4 +1,4 @@
-al ejecutar el dockerfile (explicado mas a delante)
+al ejecutar el programa (explicado mas a delante)
 
 te ofrecera 5 maneras para analizar el texto*, para ello precionas 1, 2, 3, 4, 5 o 6 y luego enter. 
 
