@@ -15,11 +15,10 @@ te ofrecera 5 maneras para analizar el texto*, para ello precionas 1, 2, 3, 4, 5
     6) Salir: cierra el programa 
 
 Para ejecutar el docker (una vez instalado y configurado git o usando la app del mismo), lo primero que se deben ejecutar los siguientes comandos
-	$ git clone 
+	$ git clone https://github.com/JoanRoland/EntornoDProgramacion
 	$ cd EntornoDProgramacion 
-	$ sudo docker build . -t TPdEdP 
-	$ sudo docker run -it --rm TPdEdP
-	
+	$ sudo docker build --tag tpfinal:1.0 .
+	$ sudo docker run -it --rm tpfinal:1.0
 
 * le texto de ejemplo es una hoja del libro Camino de los Reyes de la saga del Archivo de las tormentas 
         
