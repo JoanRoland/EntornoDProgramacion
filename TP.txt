@@ -1,0 +1,243 @@
+#!/bin/bash
+
+# echo "archivos disponibles $ls"
+# read -p "Ingrese el archivo que desea analizar: " file
+# TextoDelArchivo= $(cat $file)  
+
+file="textLong.txt"
+TextoOriginalDelArchivo=$(cat $file) 
+
+
+
+select opcion in statsWords.sh statsUsageWords.sh findNames.sh statsSentences.sh blankLinesCounter.sh salir
+do
+echo "elegiste $opcion"
+
+
+
+case $opcion in  
+statsWords.sh)  
+    
+    
+
+	Plarga=""
+	Pcorta=""
+	Larga=0
+	Corta=0
+	Contador=0
+	Acum=0
+		
+	# remueve todo lo que no sea letras o espacio	
+	# [:alpha:] = a todas las letras y el espacio al lado es para los espacios  
+	cat $file | sed 's/[^[:alpha:] ]//g' > TextoLimpio.temp
+	
+	# inesesario en dockerfile
+	sync
+
+	TextoDelArchivo=$(cat TextoLimpio.temp)
+	
+
+	for word in $TextoDelArchivo
+	do
+	
+		Longitud=${#word}
+		
+		#asigna si es la primera ronda la palabra mas chica
+		if [ $Contador -eq 0 ]
+			then
+			Pcorta=$word
+			Corta=$Longitud
+		fi
+		
+		
+		# checkea por mayor
+		if [ $Longitud -ge $Larga ]
+		then
+			Plarga=$word
+			Larga=$Longitud
+		fi
+		
+		# checkea por menor
+		if [ $Longitud -le $Corta ]
+		then
+			Pcorta=$word
+			Corta=$Longitud
+		fi
+		
+		Acum=$(( Acum + $Longitud ))
+		Contador=$(( $Contador + 1 ))
+		
+		if [ $((Contador%10)) -eq 0 ]; then
+     		  echo "procesando..."
+    		fi
+		
+	done
+
+	Promedio=$(( $Acum/$Contador ))
+	
+	echo "La mayor cantidad de letras en una palabra es: $Larga"
+	echo " Y la palabra es: $Plarga"
+	echo "La menor cantidad de lentras en una palabra es: $Corta"
+	echo " Y la palabra es: $Pcorta"
+	echo "El promedio de letras es: $Promedio"
+
+
+	rm TextoLimpio.temp
+	     ;;  
+	     
+statsUsageWords.sh )  
+        echo statsUsageWords.sh 
+
+	#ordena una debajo de otra 
+	cat $file | tr ' ' '\n' > TextoLimpio.temp 
+
+
+	#remueve signos de pregunta, exclamacion, comas , puntos y dos puntos
+	cat TextoLimpio.temp | tr -d ':' | tr -d ',' | tr -d '.' | tr -d '?' | tr -d '¿' | tr -d '¡' | tr '!' ' '| tr -d '"' > TextoLimpio2.temp 
+
+
+	# inesesario en dockerfile
+	sync
+
+
+	#awk 'length > 3' limita las mayores a 3 characteres
+	#sort | uniq -c | sort -r | head -n 10 > MOSTRAR.temp arma la lista 
+
+	cat TextoLimpio2.temp  | tr '[:upper:]' '[:lower:]' | awk 'length > 3' | sort | uniq -c | sort -r | head -n 10 
+	
+	rm TextoLimpio2.temp 
+	rm TextoLimpio.temp 
+	
+	 ;;
+
+    findNames.sh)  
+	
+	touch listado.temp
+	sync
+	
+	texto=$(cat $file)
+	
+	for word in $texto
+	do
+		#${word//[^[:alpha:]]/} busca palabras 
+		#grep -E "^([A-Z])[a-z]+$" limita solo las que empiecen con mayusc
+		
+		echo ${word//[^[:alpha:]]/} | grep -E "^([A-Z])[a-z]+$" >> listado.temp
+	done
+
+	#remueve duplicados 
+	awk '!seen[$0]++' listado.temp
+	sync
+	
+
+	rm listado.temp
+	
+        ;;       
+    
+    
+    
+    
+     statsSentences.sh)  
+	
+	Plarga=""
+	Pcorta=""
+	Larga=0
+	Corta=0
+	Contad=0
+	Acumu=0
+	
+	# remuevo enter
+	cat $file | tr -d '\n' > TextoLimpio1.temp 
+
+	
+	sync
+
+	#EOF LINE
+	UltimaLinea=$(echo $TextoOriginalDelArchivo | sed 's/\. /&\n/g' | wc -l)
+
+	
+	
+	# escupe las oraciones separadas en lineas:
+	# sed 's/\. /&\n/g' separa por puntos 
+		
+	echo $TextoOriginalDelArchivo | sed 's/\. /&\n/g' | while read line 
+	do
+		# sed 's/[0-9]//g' remueve numeros 
+		#echo "________________"
+		#echo $line
+		
+		LongitudDeLinea=${#line}
+		#echo $LongitudDeLinea
+		
+		#asigna si es la primera ronda la palabra mas chica
+		if [ $Contad = 0 ]
+			then
+			Pcorta=$line
+			Corta=$LongitudDeLinea
+		fi
+		
+		# checkea por mayor
+		if [ $LongitudDeLinea -ge $Larga ]
+		then
+			Plarga=$line
+			Larga=$LongitudDeLinea
+		fi
+		
+		# checkea por menor
+		if [ $LongitudDeLinea -le $Corta ]
+		then
+			Pcorta=$line
+			Corta=$LongitudDeLinea
+		fi
+		
+		Acumu=$(( Acumu + $LongitudDeLinea ))
+		Contad=$(( $Contad + 1 ))
+		
+		Promedio=$(( $Acumu/$Contad ))
+		
+		echo "oracion numero $Contad de $UltimaLinea"
+		
+		if [ $UltimaLinea -eq $Contad ];
+		then
+			Promedio=$(( $Acumu/$Contad ))
+	
+			echo "La oracion mas larga es : "
+			echo $Plarga
+			echo " con $Larga caracteres"
+			echo "La oracion mas corta es : "
+			echo $Pcorta
+			echo " con $Corta caracteres"
+			echo "El promedio de letras es: $Promedio"
+		
+		
+		fi
+	done
+	
+	
+	
+	
+        ;;   
+    
+     blankLinesCounter.sh)
+  
+   echo blankLinesCounter.sh
+
+	lineasEnBlanco=$(grep -cvE '[^[:space:]]' $file)
+	echo "el arhcivo tiene $lineasEnBlanco lineas en blanco"
+
+        
+        
+        ;;  
+    
+    
+    salir)  
+	
+		
+        exit 1
+        ;;  
+esac  
+
+
+done
+
+
